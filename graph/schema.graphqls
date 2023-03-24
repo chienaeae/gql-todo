@@ -1,0 +1,98 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
+    | FIELD_DEFINITION
+directive @binding(constraint: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+
+interface Node {
+    id: ID!
+}
+
+type User implements Node{
+    id: ID!
+    name: String!
+    todosConnection (first: Int, after: ID): UserTodosConnection! @goField(forceResolver: true)
+}
+
+type UserTodosConnection {
+    edges: [UserTodosEdge!]!
+}
+
+type UserTodosEdge {
+    node: Todo
+}
+
+type Todo {
+    id: ID!,
+    title: String!
+    description: String!
+    user: User!
+    tags: [Tag!]!
+}
+
+type Tag {
+    id: ID!
+    name: String!
+    description: String!
+}
+
+type Link {
+    id: ID!
+    title: String!
+    address: String!
+    user: User!
+}
+
+type Query {
+    links: [Link!]!
+    todos: [Todo!]!
+    tags: [Tag!]!
+    user(name: String!): User!
+}
+
+
+input NewLink {
+    title: String!
+    address: String!
+}
+
+input RefreshTokenInput {
+    token: String!
+}
+
+input NewUser {
+    username: String!
+    password: String!
+}
+
+input NewTodo {
+    title: String!
+    description: String = ""
+}
+
+input NewTag {
+    name: String!
+    description: String = ""
+}
+
+input LinkTagToTodoPayload {
+    todoID: String! @binding(constraint: "required,number")
+    tagID: String! @binding(constraint: "required,number")
+}
+
+input Login {
+    username: String!
+    password: String!
+}
+
+type Mutation {
+    createLink(input: NewLink!): Link!
+    createUser(input: NewUser!): String!
+    createTodo(input: NewTodo!): Todo!
+    createTag(input: NewTag!): Tag!
+    linkTagToTodo(input: LinkTagToTodoPayload!): Todo!
+    login(input: Login!): String!
+    refreshToken(input: RefreshTokenInput!): String!
+}
